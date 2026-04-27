@@ -1,0 +1,4 @@
+data/monitor/
+data/wechat-gen/
+!data/monitor/drafts/.gitkeep
+!data/wechat-gen/.gitkeep

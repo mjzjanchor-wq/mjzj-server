@@ -1,0 +1,33 @@
+version: "3.9"
+
+services:
+  # ── 卖家之家监控面板（端口 5001）──────────────────────────────────────
+  monitor:
+    build:
+      context: ./mjzj-monitor
+    image: mjzj-monitor:local
+    container_name: mjzj-monitor
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./mjzj-monitor/.env:/app/.env           # API Key 配置（可在 Web 界面修改）
+      - ./data/monitor:/app/data                # 状态文件、日志、草稿
+    restart: unless-stopped
+
+  # ── 卖家之家公众号头条生成器（端口 5002）─────────────────────────────
+  wechat-gen:
+    build:
+      context: ./mjzj-wechat-gen
+    image: mjzj-wechat-gen:local
+    container_name: mjzj-wechat-gen
+    ports:
+      - "5002:5002"
+    volumes:
+      - ./mjzj-wechat-gen/.env:/app/.env        # API Key 配置
+      - ./data/wechat-gen:/app/data             # 发布历史记录
+      - ./data/monitor/drafts:/app/monitor-drafts:ro  # 读取监控草稿（只读）
+    environment:
+      - MONITOR_DRAFTS_DIR=/app/monitor-drafts
+    depends_on:
+      - monitor
+    restart: unless-stopped
