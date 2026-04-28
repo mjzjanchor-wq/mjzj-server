@@ -7,32 +7,35 @@ echo.
 
 cd /d "%~dp0"
 
-echo [1/4] 更新部署配置...
+echo [1/5] 更新部署配置...
 git pull origin main
 if errorlevel 1 ( echo [警告] 部署配置 pull 失败，继续... )
 
 echo.
-echo [2/4] 更新监控程序代码...
+echo [2/5] 更新监控程序代码...
 cd mjzj-monitor
 git pull origin main
 if errorlevel 1 ( echo [错误] mjzj-monitor pull 失败 & cd .. & pause & exit /b 1 )
 cd ..
 
 echo.
-echo [3/4] 更新头条生成器代码...
+echo [3/5] 更新头条生成器代码...
 cd mjzj-wechat-gen
 git pull origin main
 if errorlevel 1 ( echo [错误] mjzj-wechat-gen pull 失败 & cd .. & pause & exit /b 1 )
 cd ..
 
 echo.
-echo [4/4] 重新构建并重启服务（保留所有配置和数据）...
-docker compose up -d --build
+echo [4/5] 安装新增依赖（如有）...
+cd mjzj-monitor
+.venv\Scripts\pip install -r requirements.txt -q --index-url https://pypi.tuna.tsinghua.edu.cn/simple
+cd ..
+cd mjzj-wechat-gen
+.venv\Scripts\pip install -r requirements.txt -q --index-url https://pypi.tuna.tsinghua.edu.cn/simple
+cd ..
 
 echo.
-echo =============================================
-echo   更新完成！
-echo   监控面板：  http://localhost:5001
-echo   头条生成器：http://localhost:5002
-echo =============================================
-pause
+echo [5/5] 重启服务...
+call "%~dp0stop.bat" >nul
+timeout /t 2 /nobreak >nul
+call "%~dp0start.bat"
